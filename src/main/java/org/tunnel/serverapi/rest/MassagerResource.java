@@ -1,6 +1,8 @@
 package org.tunnel.serverapi.rest;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class MassagerResource {
@@ -40,10 +44,14 @@ public class MassagerResource {
         });
 
         String inputLine;
+        JsonNode jsonNode = null;
+        ObjectMapper objectMapper = new ObjectMapper();
         while ((inputLine = in.readLine()) != null) {
             System.out.println("Received from client: " + inputLine);
+             jsonNode = objectMapper.readTree(inputLine);
             break;
         }
-        return inputLine;
+
+        return jsonNode;
     }
 }
