@@ -2,19 +2,22 @@ package org.tunnel.serverapi.config;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 @Component
+@Getter
 public class SocketServer {
     private static final int PORT = 8070;
     private ServerSocket serverSocket;
-    private Set<Socket> clients = new HashSet<>();
+    private HashMap<Integer,Socket> clients = new HashMap<>();
     private boolean running = true;
 
     @PostConstruct
@@ -33,7 +36,7 @@ public class SocketServer {
             while (running) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-                    clients.add(clientSocket);
+                    clients.put(clientSocket.getPort(), clientSocket);
                     System.out.println("Connection established with " + clientSocket.getRemoteSocketAddress());
                  } catch (IOException e) {
                     System.out.println("Exception caught when listening for connections: " + e.getMessage());
@@ -51,7 +54,7 @@ public class SocketServer {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
             }
-            for (Socket client : clients) {
+            for (Socket client : clients.values()) {
                 if (!client.isClosed()) {
                     client.close();
                 }
@@ -62,8 +65,6 @@ public class SocketServer {
         }
     }
 
-    public  Set<Socket> getClients() {
-        return clients;
-    }
+
 }
 

@@ -4,6 +4,7 @@ package org.tunnel.serverapi.rest;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.tunnel.serverapi.config.SocketServer;
 
@@ -19,13 +20,13 @@ public class MassagerResource {
     @Autowired
     SocketServer socketServer;
 
-    @GetMapping("/**")
-    public Object sendMessage(HttpServletRequest request) throws IOException {
+    @GetMapping("/{clientId}/**")
+    public Object sendMessage(@PathVariable("clientId")Integer clientPort, HttpServletRequest request) throws IOException {
         String url = request.getRequestURL().toString();
         String requestUri = request.getRequestURI();
         String contextPath = request.getContextPath();
 
-        Socket clientSocket = socketServer.getClients().stream().findFirst().get();
+        Socket clientSocket = socketServer.getClients().get(clientPort);
         int port = clientSocket.getPort();
         System.out.println("port "+port);
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -34,7 +35,7 @@ public class MassagerResource {
         Thread.ofVirtual().start(() -> {
             if(!clientSocket.isClosed()){
                 System.out.println("Server message at " + requestUri);
-                out.println(requestUri);
+                out.println(requestUri.replace("/"+clientPort , ""));
             }
         });
 
